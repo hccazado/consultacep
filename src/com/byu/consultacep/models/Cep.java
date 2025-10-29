@@ -7,7 +7,17 @@ public class Cep {
     private String uf;
     private String cidade;
 
+    public Cep(CepAPI api) {
+        this.cep = api.cep();
+        this.rua = api.logradouro();
+        this.bairro = api.bairro();
+        this.uf = api.uf();
+        this.cidade = api.localidade();
+    }
 
+    public String getCidade() {
+        return cidade;
+    }
 
     @Override
     public String toString() {

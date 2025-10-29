@@ -1,5 +1,6 @@
 import com.byu.consultacep.exceptions.InvalidDataException;
 import com.byu.consultacep.models.Cep;
+import com.byu.consultacep.models.CepAPI;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -7,10 +8,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
 import java.net.http.HttpRequest;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 void main() {
-    String cep;
+    String input;
     String baseCEPURL = "http://viacep.com.br/ws/";
     String resultFormat = "/json/";
     List<Cep> cepList = new LinkedList<>();
@@ -31,19 +30,19 @@ void main() {
         switch(menu){
             case 1:
                 System.out.print("Inform your CEP: ");
-                cep = reader.next();
-                String url = baseCEPURL+cep+resultFormat;
-                String result = consulta(url);
-                if(result){
-                    cepList.add(result);
+                input = reader.next();
+                String url = baseCEPURL+input+resultFormat;
+                Cep cep = consulta(url);
+                if(!cep.getCidade().isEmpty()){
+                    cepList.add(cep);
+                    System.out.println("added cep");
                 }
-                System.out.println(consulta(url));
-
             break;
             case 2:
-                System.out.println("Menu "+menu);
+                System.out.println(cepList);
             break;
             case 99:
+                writeFile(cepList);
                 System.out.println("Thanks for using the app!");
                 System.exit(0);
             break;
@@ -52,15 +51,29 @@ void main() {
             break;
         }
     }
+}
+
+static void writeFile (List<Cep> cepList){
+    try {
+        Gson gson = new GsonBuilder().setPrettyPrinting()
+                .create();;
+        FileWriter writer = new FileWriter("ceps.txt");
+        writer.write(gson.toJson(cepList));
+        writer.close();
+    } catch (IOException e) {
+        throw new RuntimeException(e);
+    }
 
 }
 
-static Cep buildCep (String ApiCep){
+static Cep buildCep (String api){
     Gson gson = new Gson();
-
+    CepAPI cepApi = gson.fromJson(api, CepAPI.class);
+    Cep cep = new Cep(cepApi);
+    return cep;
 }
 
-static String consulta (String url){
+static Cep consulta (String url){
     String result = "";
     int code = 0;
     try{
@@ -82,5 +95,5 @@ static String consulta (String url){
     } catch(Exception e) {
         System.out.println("An error has ocurred: " + e.getMessage());
     }
-    return result;
+    return buildCep(result);
 }
