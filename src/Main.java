@@ -21,9 +21,9 @@ static void main() {
 
     while (menu != -1){
         System.out.println("---------Consulta CEP---------");
-        System.out.println("1 - Inform a CEP");
+        System.out.println("1 - Query a CEP");
         System.out.println("2 - Print your CEPs");
-        System.out.println("3 - Inform an Address");
+        System.out.println("3 - Register an Address");
         System.out.println("4 - Print your Addresses");
         System.out.println("99 - Exit");
         System.out.print("Select an Option: ");
@@ -33,7 +33,7 @@ static void main() {
             case 1:
                 System.out.print("Inform your CEP: ");
                 input = reader.next();
-                Cep cep = searchCep(input);
+                Cep cep = new Cep(input);
                 if(!cep.getCep().isEmpty()){
                     cepList.add(cep);
                     System.out.println("Added cep");
@@ -67,7 +67,7 @@ static void main() {
 }
 
 static void writeFile (List<Address> addressList, List<Cep> cepList){
-    //writing the cep and addresses to the file addresses.txt
+    //saving cep and addresses to the file addresses.txt
     try {
         Gson gson = new GsonBuilder().setPrettyPrinting()
                 .create();
@@ -78,45 +78,4 @@ static void writeFile (List<Address> addressList, List<Cep> cepList){
     } catch (IOException e) {
         throw new RuntimeException(e);
     }
-}
-
-static String buildURL(String cep){
-    //returning the complete url
-    String baseCEPURL = "http://viacep.com.br/ws/";
-    String resultFormat = "/json/";
-    return baseCEPURL+cep+resultFormat;
-}
-
-static Cep newCep (String api){
-    //instantiates a new CEP object from the data stored in the record CepAPI
-    Gson gson = new Gson();
-    CepAPI cepApi = gson.fromJson(api, CepAPI.class);
-    return new Cep(cepApi);
-}
-
-static Cep searchCep (String cep){
-    //request the user's cep resource from the webservice and return a cep object from the body string.
-    String url = buildURL(cep);
-    String result = "";
-    int code = 0;
-    try{
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .build();
-        HttpResponse<String> response = client.send(req, HttpResponse.BodyHandlers.ofString());
-        result = response.body();
-        code = response.statusCode();
-        if (code != 200){
-            result = null;
-            throw new InvalidDataException("Invalid CEP");
-        }
-    } catch(IllegalArgumentException e){
-        System.out.println("An error has ocurred: "+ e.getMessage());
-    } catch (InvalidDataException e) {
-        System.out.println("An error has ocurred: "+e.getMessage());
-    } catch(Exception e) {
-        System.out.println("An error has ocurred: " + e.getMessage());
-    }
-    return newCep(result);
 }

@@ -45,13 +45,14 @@ public class Cep {
     }
 
     static String buildURL(String cep){
+        //concatenate and returns the url with informed cep and expected format (json)
         String baseCEPURL = "http://viacep.com.br/ws/";
         String resultFormat = "/json/";
         return baseCEPURL+cep+resultFormat;
     }
 
     private void fetchCepData (String cep){
-        //fetching data from remote API and filling missing data for creating a new
+        //fetch data from remote API(viacep) and fills the current object with returned data
         String url = buildURL(cep);
         int code = 0;
         try{
